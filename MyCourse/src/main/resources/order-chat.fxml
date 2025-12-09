@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.*?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="org.example.OrderChatController"
+      spacing="10">
+
+    <padding>
+        <Insets top="10" right="10" bottom="10" left="10"/>
+    </padding>
+
+    <children>
+        <Label text="Užsakymo susirašinėjimas"
+               style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+
+        <ListView fx:id="messageList" VBox.vgrow="ALWAYS"/>
+
+        <HBox spacing="5">
+            <children>
+                <TextField fx:id="inputField" HBox.hgrow="ALWAYS"/>
+                <Button text="Siųsti" onAction="#onSend"/>
+            </children>
+        </HBox>
+    </children>
+
+</VBox>

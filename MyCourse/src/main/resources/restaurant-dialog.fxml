@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/22"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="org.example.RestaurantDialogController"
+      spacing="10">
+
+    <padding>
+        <Insets top="10" right="10" bottom="10" left="10"/>
+    </padding>
+
+    <children>
+        <Label text="Naujas restoranas" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+
+        <GridPane hgap="10" vgap="10">
+            <columnConstraints>
+                <ColumnConstraints halignment="RIGHT"/>
+                <ColumnConstraints hgrow="ALWAYS"/>
+            </columnConstraints>
+
+            <children>
+                <Label text="Pavadinimas:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                <TextField fx:id="nameField" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+                <Label text="Adresas:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                <TextField fx:id="addressField" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+                <Label text="Populiarumas (1-5):" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                <TextField fx:id="popularityField" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+                <Label text="Atidarytas:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                <CheckBox fx:id="openCheckBox" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+            </children>
+        </GridPane>
+
+        <Separator/>
+
+        <HBox spacing="10" alignment="CENTER_RIGHT">
+            <Button text="Atšaukti" onAction="#onCancel"/>
+            <Button text="Išsaugoti" onAction="#onSave"/>
+        </HBox>
+    </children>
+</VBox>

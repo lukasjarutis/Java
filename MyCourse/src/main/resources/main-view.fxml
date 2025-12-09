@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane fx:id="rootPane"
+            xmlns="http://javafx.com/javafx/22"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="org.example.MainController">
+
+    <top>
+        <MenuBar>
+            <menus>
+                <Menu text="Failas">
+                    <items>
+                        <MenuItem text="Išeiti" onAction="#onExit"/>
+                    </items>
+                </Menu>
+
+                <Menu text="Restoranai">
+                    <items>
+                        <MenuItem text="Naujas restoranas..." onAction="#onNewRestaurant"/>
+                        <MenuItem text="Redaguoti pasirinktą" onAction="#onEditRestaurant"/>
+                        <MenuItem text="Šalinti pasirinktą" onAction="#onDeleteRestaurant"/>
+                    </items>
+                </Menu>
+            </menus>
+        </MenuBar>
+    </top>
+
+    <center>
+        <TabPane fx:id="mainTabPane">
+            <tabs>
+                <Tab fx:id="restaurantsTab" text="Restoranai" closable="false">
+                    <BorderPane>
+                        <top>
+                            <HBox spacing="10">
+                                <children>
+                                    <Label text="Pavadinimas:"/>
+                                    <TextField fx:id="nameFilterField" promptText="pvz. Pica"/>
+
+                                    <CheckBox fx:id="openOnlyCheckBox" text="Tik atidaryti"/>
+
+                                    <Label text="Min. populiarumas:"/>
+                                    <TextField fx:id="minPopularityField" promptText="pvz. 4.0" prefWidth="60"/>
+
+                                    <Button text="Filtruoti" onAction="#onApplyFilter"/>
+                                    <Button text="Išvalyti" onAction="#onClearFilter"/>
+                                </children>
+                            </HBox>
+                        </top>
+
+                        <center>
+                            <TableView fx:id="restaurantTable">
+                                <columns>
+                                    <TableColumn fx:id="colName" text="Pavadinimas"/>
+                                    <TableColumn fx:id="colAddress" text="Adresas"/>
+                                    <TableColumn fx:id="colPopularity" text="Populiarumas"/>
+                                </columns>
+                            </TableView>
+                        </center>
+
+                        <bottom>
+                            <ToolBar fx:id="restaurantToolbar">
+                                <Button text="Naujas..." onAction="#onNewRestaurant"/>
+                                <Button text="Redaguoti" onAction="#onEditRestaurant"/>
+                                <Button text="Šalinti" onAction="#onDeleteRestaurant"/>
+                            </ToolBar>
+                        </bottom>
+                    </BorderPane>
+                </Tab>
+
+
+                <Tab fx:id="ordersTab" text="Užsakymai" closable="false">
+                    <BorderPane>
+                        <center>
+                            <TableView fx:id="ordersTable">
+                                <columns>
+                                    <TableColumn fx:id="colOrderId" text="ID"/>
+                                    <TableColumn fx:id="colOrderRestaurant" text="Restoranas"/>
+                                    <TableColumn fx:id="colOrderCustomer" text="Klientas"/>
+                                    <TableColumn fx:id="colOrderStatus" text="Statusas"/>
+                                    <TableColumn fx:id="colOrderTotal" text="Suma"/>
+                                    <TableColumn fx:id="colOrderCreated" text="Sukurta"/>
+                                </columns>
+                            </TableView>
+                        </center>
+                        <bottom>
+                            <ToolBar>
+                                <Button text="Naujas užsakymas" onAction="#onNewOrder"/>
+                                <Button text="Keisti statusą" onAction="#onChangeOrderStatus"/>
+                                <Button text="Šalinti" onAction="#onDeleteOrder"/>
+                                <Button text="Chat" onAction="#onOrderChat"/>
+                            </ToolBar>
+                        </bottom>
+                    </BorderPane>
+                </Tab>
+
+                <Tab fx:id="usersTab" text="Vartotojai" closable="false">
+                    <BorderPane>
+                        <center>
+                            <TableView fx:id="usersTable">
+                                <columns>
+                                    <TableColumn fx:id="colUserId" text="ID"/>
+                                    <TableColumn fx:id="colUserUsername" text="Vartotojo vardas"/>
+                                    <TableColumn fx:id="colUserFullName" text="Vardas, pavardė"/>
+                                    <TableColumn fx:id="colUserEmail" text="El. paštas"/>
+                                    <TableColumn fx:id="colUserRole" text="Rolė"/>
+                                </columns>
+                            </TableView>
+                        </center>
+                        <bottom>
+                            <ToolBar fx:id="usersToolbar">
+                                <Button text="Naujas vartotojas" onAction="#onNewUser"/>
+                                <Button text="Redaguoti" onAction="#onEditUser"/>
+                                <Button text="Šalinti" onAction="#onDeleteUser"/>
+                            </ToolBar>
+                        </bottom>
+                    </BorderPane>
+                </Tab>
+
+            </tabs>
+        </TabPane>
+    </center>
+
+    <bottom>
+        <Label fx:id="dbStatusLabel" text="DB: neprisijungta"/>
+    </bottom>
+
+</BorderPane>

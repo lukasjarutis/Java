@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/22"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="org.example.UserDialogController"
+      spacing="10">
+
+    <padding>
+        <Insets top="10" right="10" bottom="10" left="10"/>
+    </padding>
+
+    <children>
+        <Label text="Vartotojo redagavimas" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+
+        <GridPane hgap="10" vgap="10">
+            <columnConstraints>
+                <ColumnConstraints halignment="RIGHT"/>
+                <ColumnConstraints hgrow="ALWAYS"/>
+            </columnConstraints>
+
+            <children>
+                <Label text="Vartotojo vardas:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                <TextField fx:id="usernameField" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+                <Label text="Vardas, pavardė:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                <TextField fx:id="fullNameField" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+                <Label text="El. paštas:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                <TextField fx:id="emailField" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+                <Label text="Telefonas:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                <TextField fx:id="phoneField" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+                <Label text="Rolė:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                <ComboBox fx:id="roleComboBox" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+
+                <Label text="Naujas slaptažodis:" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+                <PasswordField fx:id="passwordField" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+
+                <Label text="(palikite tuščią, jei nekeičiate)" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
+            </children>
+        </GridPane>
+
+        <HBox spacing="10" alignment="CENTER_RIGHT">
+            <Button text="Atšaukti" onAction="#onCancel"/>
+            <Button text="Išsaugoti" onAction="#onSave"/>
+        </HBox>
+    </children>
+</VBox>
