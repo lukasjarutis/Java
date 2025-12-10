@@ -1,6 +1,7 @@
 package org.foodapp.web;
 
 import org.foodapp.AppUserRow;
+import org.foodapp.UserRole;
 import org.foodapp.service.AuthService;
 import org.foodapp.web.dto.LegacyAuthRequest;
 import org.foodapp.web.dto.LegacyAuthResponse;
@@ -25,7 +26,12 @@ public class LegacyAuthController {
     @PostMapping("/validateUser")
     public ResponseEntity<LegacyAuthResponse> legacyLogin(@RequestBody LegacyAuthRequest request) {
         String username = request.getLogin() != null ? request.getLogin() : request.getUsername();
-        AppUserRow user = authService.authenticate(username, request.getPassword());
+        AppUserRow user = authService.authenticate(
+                username,
+                request.getPassword(),
+                UserRole.CUSTOMER,
+                UserRole.DRIVER
+        );
 
         String fullName = user.getFullName() != null ? user.getFullName().trim() : "";
         String firstName = fullName.isEmpty() ? user.getUsername() : fullName.split(" ", 2)[0];

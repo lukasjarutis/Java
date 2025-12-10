@@ -6,6 +6,7 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import org.foodapp.User;
+import org.foodapp.UserRole;
 
 import java.sql.SQLException;
 
@@ -52,6 +53,11 @@ public class LoginController {
             User user = userDAO.authenticate(username, password);
             if (user == null) {
                 errorLabel.setText("Neteisingas vartotojo vardas arba slaptažodis.");
+                return;
+            }
+
+            if (user.getRole() != UserRole.ADMIN && user.getRole() != UserRole.OWNER) {
+                errorLabel.setText("Ši programa skirta tik administratoriams ir restoranams.");
                 return;
             }
 
