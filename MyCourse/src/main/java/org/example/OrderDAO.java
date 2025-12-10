@@ -4,6 +4,7 @@ import org.foodapp.*;
 import org.foodapp.Driver;
 
 import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,6 +33,73 @@ public class OrderDAO {
             while (rs.next()) {
                 Order order = mapRow(rs);
                 result.add(order);
+            }
+
+            return result;
+        }
+    }
+
+    public List<Order> findFiltered(OrderStatus status,
+                                    LocalDateTime from,
+                                    LocalDateTime to,
+                                    String customer,
+                                    String restaurantName) throws SQLException {
+        StringBuilder sql = new StringBuilder("""
+                SELECT o.id, o.restaurant_id, o.customer_id, o.driver_id,
+                       o.status, o.total_price, o.created_at,
+                       r.name AS restaurant_name,
+                       c.username AS customer_username,
+                       d.username AS driver_username
+                FROM food_order o
+                JOIN restaurant r ON o.restaurant_id = r.id
+                JOIN app_user c ON o.customer_id = c.id
+                LEFT JOIN app_user d ON o.driver_id = d.id
+                WHERE 1=1
+                """);
+
+        List<Object> params = new ArrayList<>();
+
+        if (status != null) {
+            sql.append(" AND o.status = ?");
+            params.add(status.name());
+        }
+
+        if (from != null) {
+            sql.append(" AND o.created_at >= ?");
+            params.add(Timestamp.valueOf(from));
+        }
+
+        if (to != null) {
+            sql.append(" AND o.created_at <= ?");
+            params.add(Timestamp.valueOf(to));
+        }
+
+        if (customer != null && !customer.isBlank()) {
+            sql.append(" AND LOWER(c.username) LIKE ?");
+            params.add("%" + customer.toLowerCase() + "%");
+        }
+
+        if (restaurantName != null && !restaurantName.isBlank()) {
+            sql.append(" AND LOWER(r.name) LIKE ?");
+            params.add("%" + restaurantName.toLowerCase() + "%");
+        }
+
+        sql.append(" ORDER BY o.created_at DESC");
+
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+
+            List<Order> result = new ArrayList<>();
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Order order = mapRow(rs);
+                    result.add(order);
+                }
             }
 
             return result;

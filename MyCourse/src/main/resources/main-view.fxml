@@ -73,6 +73,28 @@
 
                 <Tab fx:id="ordersTab" text="Užsakymai" closable="false">
                     <BorderPane>
+                        <top>
+                            <HBox spacing="10">
+                                <children>
+                                    <Label text="Statusas:"/>
+                                    <ComboBox fx:id="orderStatusFilter" prefWidth="140"/>
+
+                                    <Label text="Nuo:"/>
+                                    <DatePicker fx:id="orderFromDatePicker"/>
+                                    <Label text="Iki:"/>
+                                    <DatePicker fx:id="orderToDatePicker"/>
+
+                                    <Label text="Klientas:"/>
+                                    <TextField fx:id="orderCustomerFilterField" promptText="vartotojo vardas"/>
+
+                                    <Label text="Restoranas:"/>
+                                    <TextField fx:id="orderRestaurantFilterField" promptText="pavadinimas"/>
+
+                                    <Button text="Filtruoti" onAction="#onApplyOrderFilter"/>
+                                    <Button text="Išvalyti" onAction="#onClearOrderFilter"/>
+                                </children>
+                            </HBox>
+                        </top>
                         <center>
                             <TableView fx:id="ordersTable">
                                 <columns>
@@ -95,9 +117,29 @@
                         </bottom>
                     </BorderPane>
                 </Tab>
-
+                
                 <Tab fx:id="usersTab" text="Vartotojai" closable="false">
                     <BorderPane>
+                        <top>
+                            <HBox spacing="10">
+                                <children>
+                                    <Label text="Vartotojo vardas:"/>
+                                    <TextField fx:id="userUsernameFilterField" promptText="login"/>
+
+                                    <Label text="Vardas, pavardė:"/>
+                                    <TextField fx:id="userFullNameFilterField" promptText="vardas pavardė"/>
+
+                                    <Label text="El. paštas:"/>
+                                    <TextField fx:id="userEmailFilterField" promptText="email"/>
+
+                                    <Label text="Telefonas:"/>
+                                    <TextField fx:id="userPhoneFilterField" promptText="telefonas"/>
+
+                                    <Button text="Filtruoti" onAction="#onApplyUserFilter"/>
+                                    <Button text="Išvalyti" onAction="#onClearUserFilter"/>
+                                </children>
+                            </HBox>
+                        </top>
                         <center>
                             <TableView fx:id="usersTable">
                                 <columns>
