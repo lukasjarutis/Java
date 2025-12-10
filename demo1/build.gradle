@@ -4,9 +4,13 @@ plugins {
     id 'io.spring.dependency-management' version '1.1.7'
 }
 
-group = 'org.example'
+group = 'org.foodapp'
 version = '0.0.1-SNAPSHOT'
 description = 'demo1'
+
+springBoot {
+    mainClass = 'org.foodapp.DemoApplication'
+}
 
 java {
     toolchain {
@@ -20,9 +24,8 @@ repositories {
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-hateoas'
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
 
     implementation 'com.mysql:mysql-connector-j:9.1.0'
 
