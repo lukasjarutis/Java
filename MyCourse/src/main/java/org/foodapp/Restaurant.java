@@ -31,8 +31,13 @@ public class Restaurant {
     }
 
     public void addMenuItem(MenuItem item) {
-        menuItems.remove(item);
-        item.setRestaurant(null);
+        if (item == null) {
+            return;
+        }
+        if (!menuItems.contains(item)) {
+            menuItems.add(item);
+        }
+        item.setRestaurant(this);
     }
 
     public void removeMenuItem(MenuItem item) {
