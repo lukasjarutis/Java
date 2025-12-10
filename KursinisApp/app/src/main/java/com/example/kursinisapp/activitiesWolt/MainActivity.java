@@ -1,25 +1,29 @@
-package com.example.kursinisapp;
+package com.example.kursinisapp.activitiesWolt;
 
+import static com.example.kursinisapp.Utils.Constants.VALIDATE_USER_URL;
+
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
-
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
 import android.widget.TextView;
+
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+
+import com.example.kursinisapp.R;
+import com.example.kursinisapp.Utils.RestOperations;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
 import java.io.IOException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-
-import static com.example.kursinisapp.Constants.VALIDATE_USER_URL;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -36,7 +40,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void validateUser(View view) {
-
         TextView login = findViewById(R.id.loginField);
         TextView password = findViewById(R.id.passwordField);
 
@@ -44,26 +47,33 @@ public class MainActivity extends AppCompatActivity {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("login", login.getText().toString());
         jsonObject.addProperty("password", password.getText().toString());
+        String info = gson.toJson(jsonObject);
 
-        String data = gson.toJson(jsonObject);
-        System.out.println(data);
-
-        Executor  executor = Executors.newSingleThreadExecutor();
+        Executor executor = Executors.newSingleThreadExecutor();
         Handler handler = new Handler(Looper.getMainLooper());
 
         executor.execute(() -> {
-
             try {
-                String response = RestOperation.sendPost(VALIDATE_USER_URL, String.valueOf(gson));
+                String response = RestOperations.sendPost(VALIDATE_USER_URL, info);
                 handler.post(() -> {
-                    if(!response.equals("Error")) {
-                        Intent intent = new Intent(MainActivity.this, WoltMain.class);
+                    if (!response.equals("Error") && !response.isEmpty()) {
+                        Intent intent = new Intent(MainActivity.this, WoltRestaurants.class);
+                        intent.putExtra("userJsonObject", response);
+                        //??Jei noriu kazka is response paimt, man reikia parsint sia dali
+                        //intent.putExtra("userId", )
                         startActivity(intent);
                     }
                 });
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                //Toast reikes
             }
+
         });
+
+    }
+
+    public void loadRegWindow(View view) {
+        Intent intent = new Intent(MainActivity.this, RegistrationActivity.class);
+        startActivity(intent);
     }
 }
