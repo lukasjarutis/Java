@@ -2,12 +2,12 @@ package org.foodapp.repository;
 
 import org.foodapp.Restaurant;
 import org.foodapp.exception.NotFoundException;
+import org.springframework.jdbc.core.GeneratedKeyHolder;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
 
 import java.sql.PreparedStatement;
 import java.sql.Statement;
