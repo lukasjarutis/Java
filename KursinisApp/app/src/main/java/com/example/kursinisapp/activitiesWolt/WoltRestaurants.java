@@ -11,6 +11,7 @@ import android.widget.ListView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -90,10 +91,36 @@ public class WoltRestaurants extends AppCompatActivity {
 
                                 restaurantListElement.setOnItemClickListener((parent, view, position, id) -> {
                                     Restaurant selectedRestaurant = restaurantListFromJson.get(position);
-                                    Intent intentMenu = new Intent(WoltRestaurants.this, MenuActivity.class);
-                                    intentMenu.putExtra("restaurantId", selectedRestaurant.getId());
-                                    intentMenu.putExtra("userId", currentUser.getId());
-                                    startActivity(intentMenu);
+                                    AlertDialog.Builder builder = new AlertDialog.Builder(WoltRestaurants.this);
+                                    builder.setTitle(selectedRestaurant.getName());
+
+                                    StringBuilder details = new StringBuilder();
+                                    if (selectedRestaurant.getRestaurantType() != null && !selectedRestaurant.getRestaurantType().isEmpty()) {
+                                        details.append("🍽️ ").append(selectedRestaurant.getRestaurantType()).append("\n");
+                                    }
+                                    if (selectedRestaurant.getWorkingHours() != null && !selectedRestaurant.getWorkingHours().isEmpty()) {
+                                        details.append("⏰ ").append(selectedRestaurant.getWorkingHours()).append("\n");
+                                    }
+                                    if (selectedRestaurant.getAddress() != null && !selectedRestaurant.getAddress().isEmpty()) {
+                                        details.append("📍 ").append(selectedRestaurant.getAddress()).append("\n");
+                                    }
+                                    if (selectedRestaurant.getPhoneNumber() != null && !selectedRestaurant.getPhoneNumber().isEmpty()) {
+                                        details.append("📞 ").append(selectedRestaurant.getPhoneNumber()).append("\n");
+                                    }
+
+                                    if (details.length() == 0) {
+                                        details.append("Restaurant details are not available.");
+                                    }
+
+                                    builder.setMessage(details.toString());
+                                    builder.setPositiveButton("View menu", (dialog, which) -> {
+                                        Intent intentMenu = new Intent(WoltRestaurants.this, MenuActivity.class);
+                                        intentMenu.putExtra("restaurantId", selectedRestaurant.getId());
+                                        intentMenu.putExtra("userId", currentUser.getId());
+                                        startActivity(intentMenu);
+                                    });
+                                    builder.setNegativeButton("Close", null);
+                                    builder.show();
                                 });
 
 

@@ -11,6 +11,8 @@ import android.widget.TextView;
 import com.example.kursinisapp.R;
 import com.example.kursinisapp.model.Cuisine;
 
+import androidx.appcompat.app.AlertDialog;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -124,6 +126,8 @@ public class MenuAdapter extends BaseAdapter {
             }
         });
 
+        convertView.setOnClickListener(v -> showCuisineDetails(cuisine));
+
         return convertView;
     }
 
@@ -133,6 +137,38 @@ public class MenuAdapter extends BaseAdapter {
 
     public List<Cuisine> getMenuItems() {
         return menuItems;
+    }
+
+    private void showCuisineDetails(Cuisine cuisine) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle(cuisine.getName());
+
+        String description = buildDescription(cuisine);
+        builder.setMessage(description.isEmpty() ? "No description available for this item." : description);
+        builder.setPositiveButton("OK", null);
+        builder.show();
+    }
+
+    private String buildDescription(Cuisine cuisine) {
+        StringBuilder descriptionBuilder = new StringBuilder();
+
+        if (cuisine.getIngredients() != null && !cuisine.getIngredients().isEmpty()) {
+            descriptionBuilder.append("Ingredients: ").append(cuisine.getIngredients()).append("\n");
+        }
+
+        if (cuisine.getPrice() != null) {
+            descriptionBuilder.append("Price: ").append(String.format("€%.2f", cuisine.getPrice())).append("\n");
+        }
+
+        if (cuisine.isSpicy()) {
+            descriptionBuilder.append("Spicy option\n");
+        }
+
+        if (cuisine.isVegan()) {
+            descriptionBuilder.append("Suitable for vegans\n");
+        }
+
+        return descriptionBuilder.toString().trim();
     }
 }
 
