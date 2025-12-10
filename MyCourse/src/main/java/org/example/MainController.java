@@ -20,7 +20,9 @@ import org.foodapp.AppUserRow;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Optional;
 
 public class MainController {
@@ -77,6 +79,16 @@ public class MainController {
     private TableColumn<Order, Double> colOrderTotal;
     @FXML
     private TableColumn<Order, String> colOrderCreated;
+    @FXML
+    private ComboBox<OrderStatus> orderStatusFilter;
+    @FXML
+    private DatePicker orderFromDatePicker;
+    @FXML
+    private DatePicker orderToDatePicker;
+    @FXML
+    private TextField orderCustomerFilterField;
+    @FXML
+    private TextField orderRestaurantFilterField;
 
     private final ObservableList<Order> orderList = FXCollections.observableArrayList();
     private final OrderDAO orderDAO = new OrderDAO();
@@ -97,6 +109,14 @@ public class MainController {
     private TableColumn<AppUserRow, String> colUserEmail;
     @FXML
     private TableColumn<AppUserRow, String> colUserRole;
+    @FXML
+    private TextField userUsernameFilterField;
+    @FXML
+    private TextField userFullNameFilterField;
+    @FXML
+    private TextField userEmailFilterField;
+    @FXML
+    private TextField userPhoneFilterField;
 
     private final ObservableList<AppUserRow> userList = FXCollections.observableArrayList();
     private final AppUserDAO appUserDAO = new AppUserDAO();
@@ -149,6 +169,10 @@ public class MainController {
         );
 
         ordersTable.setItems(orderList);
+
+        if (orderStatusFilter != null) {
+            orderStatusFilter.setItems(FXCollections.observableArrayList(OrderStatus.values()));
+        }
 
         if (colUserId != null) {
             colUserId.setCellValueFactory(data ->
@@ -321,7 +345,7 @@ public class MainController {
         }
 
         loadRestaurantsFromDb();
-        loadOrdersFromDb();
+        loadOrdersFromDb(null, null, null, null, null);
 
         if (user.getRole() == UserRole.ADMIN) {
             loadUsersFromDb();
@@ -401,9 +425,17 @@ public class MainController {
     }
 
     private void loadOrdersFromDb() {
+        loadOrdersFromDb(null, null, null, null, null);
+    }
+
+    private void loadOrdersFromDb(OrderStatus status,
+                                  LocalDateTime from,
+                                  LocalDateTime to,
+                                  String customer,
+                                  String restaurantName) {
         try {
             orderList.clear();
-            orderList.addAll(orderDAO.findAll());
+            orderList.addAll(orderDAO.findFiltered(status, from, to, customer, restaurantName));
         } catch (SQLException e) {
             showError("Nepavyko užkrauti užsakymų", e.getMessage());
         }
@@ -519,10 +551,62 @@ public class MainController {
         }
     }
 
+    @FXML
+    private void onApplyOrderFilter() {
+        OrderStatus status = orderStatusFilter != null ? orderStatusFilter.getValue() : null;
+
+        LocalDate fromDate = orderFromDatePicker != null ? orderFromDatePicker.getValue() : null;
+        LocalDate toDate = orderToDatePicker != null ? orderToDatePicker.getValue() : null;
+
+        LocalDateTime fromDateTime = fromDate != null ? fromDate.atStartOfDay() : null;
+        LocalDateTime toDateTime = null;
+        if (toDate != null) {
+            toDateTime = toDate.atTime(LocalTime.MAX);
+        }
+
+        String customer = orderCustomerFilterField != null ? orderCustomerFilterField.getText() : null;
+        String restaurantName = orderRestaurantFilterField != null ? orderRestaurantFilterField.getText() : null;
+
+        loadOrdersFromDb(status, fromDateTime, toDateTime, customer, restaurantName);
+    }
+
+    @FXML
+    private void onClearOrderFilter() {
+        if (orderStatusFilter != null) {
+            orderStatusFilter.setValue(null);
+        }
+        if (orderFromDatePicker != null) {
+            orderFromDatePicker.setValue(null);
+        }
+        if (orderToDatePicker != null) {
+            orderToDatePicker.setValue(null);
+        }
+        if (orderCustomerFilterField != null) {
+            orderCustomerFilterField.clear();
+        }
+        if (orderRestaurantFilterField != null) {
+            orderRestaurantFilterField.clear();
+        }
+
+        loadOrdersFromDb(null, null, null, null, null);
+    }
+
     private void loadUsersFromDb() {
         try {
             userList.clear();
             userList.addAll(appUserDAO.findAll());
+        } catch (SQLException e) {
+            showError("Nepavyko užkrauti vartotojų", e.getMessage());
+        }
+    }
+
+    private void loadUsersFromDb(String username,
+                                 String fullName,
+                                 String email,
+                                 String phone) {
+        try {
+            userList.clear();
+            userList.addAll(appUserDAO.findFiltered(username, fullName, email, phone));
         } catch (SQLException e) {
             showError("Nepavyko užkrauti vartotojų", e.getMessage());
         }
@@ -624,6 +708,34 @@ public class MainController {
                 showError("Nepavyko pašalinti vartotojo", e.getMessage());
             }
         }
+    }
+
+    @FXML
+    private void onApplyUserFilter() {
+        String username = userUsernameFilterField != null ? userUsernameFilterField.getText() : null;
+        String fullName = userFullNameFilterField != null ? userFullNameFilterField.getText() : null;
+        String email = userEmailFilterField != null ? userEmailFilterField.getText() : null;
+        String phone = userPhoneFilterField != null ? userPhoneFilterField.getText() : null;
+
+        loadUsersFromDb(username, fullName, email, phone);
+    }
+
+    @FXML
+    private void onClearUserFilter() {
+        if (userUsernameFilterField != null) {
+            userUsernameFilterField.clear();
+        }
+        if (userFullNameFilterField != null) {
+            userFullNameFilterField.clear();
+        }
+        if (userEmailFilterField != null) {
+            userEmailFilterField.clear();
+        }
+        if (userPhoneFilterField != null) {
+            userPhoneFilterField.clear();
+        }
+
+        loadUsersFromDb();
     }
 
     @FXML
