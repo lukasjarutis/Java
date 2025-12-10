@@ -42,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
     public void validateUser(View view) {
         TextView login = findViewById(R.id.loginField);
         TextView password = findViewById(R.id.passwordField);
+        TextView errorMessage = findViewById(R.id.errorMessage);
 
         Gson gson = new Gson();
         JsonObject jsonObject = new JsonObject();
@@ -57,11 +58,14 @@ public class MainActivity extends AppCompatActivity {
                 String response = RestOperations.sendPost(VALIDATE_USER_URL, info);
                 handler.post(() -> {
                     if (!response.equals("Error") && !response.isEmpty()) {
+                        errorMessage.setText("");
                         Intent intent = new Intent(MainActivity.this, WoltRestaurants.class);
                         intent.putExtra("userJsonObject", response);
                         //??Jei noriu kazka is response paimt, man reikia parsint sia dali
                         //intent.putExtra("userId", )
                         startActivity(intent);
+                    } else {
+                        errorMessage.setText("Prisijungti gali tik klientai ir vairuotojai.");
                     }
                 });
             } catch (IOException e) {
