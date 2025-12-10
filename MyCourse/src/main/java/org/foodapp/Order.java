@@ -48,6 +48,23 @@ public class Order {
         recalculateTotal();
     }
 
+    public boolean removeItemByMenuItemId(Long menuItemId) {
+        if (menuItemId == null) {
+            return false;
+        }
+
+        boolean removed = items.removeIf(i ->
+                i.getMenuItem() != null
+                        && menuItemId.equals(i.getMenuItem().getId())
+        );
+
+        if (removed) {
+            recalculateTotal();
+        }
+
+        return removed;
+    }
+
     public void addMessage(ChatMessage message) {
         messages.add(message);
         message.setOrder(this);
@@ -148,6 +165,7 @@ public class Order {
     }
 
     public void setCustomer(Customer customer) {
+        enforceParticipantsAreMutable(this.customer, customer);
         this.customer = customer;
     }
 
@@ -156,6 +174,8 @@ public class Order {
     }
 
     public void setDriver(Driver driver) {
+        enforceDriverAssignmentAllowed(driver);
+        enforceParticipantsAreMutable(this.driver, driver);
         this.driver = driver;
     }
 
@@ -170,5 +190,46 @@ public class Order {
 
     public void setReviews(List<Review> reviews) {
         this.reviews = reviews;
+    }
+
+    private void enforceParticipantsAreMutable(User current, User incoming) {
+        if (current == null && incoming == null) {
+            return;
+        }
+
+        if (isPickedUpOrLater()
+                && !isSameUser(current, incoming)) {
+            throw new IllegalStateException(
+                    "Negalima keisti pirkėjo ar vairuotojo po to, kai užsakymas paimtas"
+            );
+        }
+    }
+
+    private boolean isPickedUpOrLater() {
+        return status != null && status.ordinal() >= OrderStatus.PICKED_UP.ordinal();
+    }
+
+    private boolean isSameUser(User current, User incoming) {
+        if (current == incoming) {
+            return true;
+        }
+        if (current == null || incoming == null) {
+            return false;
+        }
+        return current.getId() != null
+                && current.getId().equals(incoming.getId());
+    }
+
+    private void enforceDriverAssignmentAllowed(Driver driver) {
+        if (driver == null) {
+            return;
+        }
+
+        boolean isNewOrder = id == null;
+        if (isNewOrder && items.isEmpty()) {
+            throw new IllegalStateException(
+                    "Negalima priskirti vairuotojo tuščiam užsakymui"
+            );
+        }
     }
 }

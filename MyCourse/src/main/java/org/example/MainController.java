@@ -505,6 +505,12 @@ public class MainController {
             return;
         }
 
+        if (loggedInUser != null && loggedInUser.getRole() == UserRole.CUSTOMER) {
+            showWarning("Neturite teisių",
+                    "Klientai negali keisti užsakymo statuso. Tai gali atlikti restoranas ar administratorius.");
+            return;
+        }
+
         ChoiceDialog<OrderStatus> dialog = new ChoiceDialog<>(
                 selected.getStatus(), OrderStatus.values()
         );
