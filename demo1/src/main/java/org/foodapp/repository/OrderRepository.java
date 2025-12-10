@@ -6,7 +6,7 @@ import org.foodapp.Order;
 import org.foodapp.OrderStatus;
 import org.foodapp.Restaurant;
 import org.foodapp.exception.NotFoundException;
-import org.springframework.jdbc.core.GeneratedKeyHolder;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
