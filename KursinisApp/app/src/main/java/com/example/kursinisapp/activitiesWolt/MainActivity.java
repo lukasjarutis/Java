@@ -18,6 +18,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.example.kursinisapp.R;
 import com.example.kursinisapp.Utils.RestOperations;
+import com.example.kursinisapp.model.AuthResponse;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
@@ -46,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
 
         Gson gson = new Gson();
         JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("login", login.getText().toString());
+        jsonObject.addProperty("username", login.getText().toString());
         jsonObject.addProperty("password", password.getText().toString());
         String info = gson.toJson(jsonObject);
 
@@ -58,18 +59,25 @@ public class MainActivity extends AppCompatActivity {
                 String response = RestOperations.sendPost(VALIDATE_USER_URL, info);
                 handler.post(() -> {
                     if (!response.equals("Error") && !response.isEmpty()) {
-                        errorMessage.setText("");
-                        Intent intent = new Intent(MainActivity.this, WoltRestaurants.class);
-                        intent.putExtra("userJsonObject", response);
-                        //??Jei noriu kazka is response paimt, man reikia parsint sia dali
-                        //intent.putExtra("userId", )
-                        startActivity(intent);
+                        try {
+                            AuthResponse authResponse = new Gson().fromJson(response, AuthResponse.class);
+                            if (authResponse != null && authResponse.getId() > 0) {
+                                errorMessage.setText("");
+                                Intent intent = new Intent(MainActivity.this, WoltRestaurants.class);
+                                intent.putExtra("userJsonObject", response);
+                                startActivity(intent);
+                            } else {
+                                errorMessage.setText("Neteisingi prisijungimo duomenys.");
+                            }
+                        } catch (Exception e) {
+                            errorMessage.setText("Nepavyko apdoroti atsakymo.");
+                        }
                     } else {
-                        errorMessage.setText("Prisijungti gali tik klientai ir vairuotojai.");
+                        errorMessage.setText("Prisijungimas nepavyko. Patikrinkite duomenis.");
                     }
                 });
             } catch (IOException e) {
-                //Toast reikes
+                handler.post(() -> errorMessage.setText("Serveris nepasiekiamas."));
             }
 
         });

@@ -11,13 +11,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.example.kursinisapp.R;
-import com.example.kursinisapp.model.FoodOrder;
+import com.example.kursinisapp.model.OrderResponse;
 
 import java.util.List;
 
-public class MyOrdersAdapter extends ArrayAdapter<FoodOrder> {
+public class MyOrdersAdapter extends ArrayAdapter<OrderResponse> {
 
-    public MyOrdersAdapter(@NonNull Context context, @NonNull List<FoodOrder> orders) {
+    public MyOrdersAdapter(@NonNull Context context, @NonNull List<OrderResponse> orders) {
         super(context, 0, orders);
     }
 
@@ -29,29 +29,20 @@ public class MyOrdersAdapter extends ArrayAdapter<FoodOrder> {
             view = LayoutInflater.from(getContext()).inflate(R.layout.item_order, parent, false);
         }
 
-        FoodOrder order = getItem(position);
+        OrderResponse order = getItem(position);
 
         TextView restaurantLabel = view.findViewById(R.id.orderRestaurant);
         TextView orderTitle = view.findViewById(R.id.orderTitle);
         TextView orderPrice = view.findViewById(R.id.orderPrice);
 
         if (order != null) {
-//            String restaurantName = order.getRestaurantName();
-//            // Fallback to order name if restaurant name is not present
-//            restaurantLabel.setText(restaurantName != null && !restaurantName.isEmpty()
-//                    ? restaurantName
-//                    : order.getName());
+            String restaurantName = order.getRestaurant() != null ? order.getRestaurant().getName() : "Unknown";
+            restaurantLabel.setText(restaurantName);
 
-            orderTitle.setText("Order #" + order.getId());
-
-            if (order.getPrice() != null) {
-                orderPrice.setText("€" + String.format("%.2f", order.getPrice()));
-            } else {
-                orderPrice.setText("Price: N/A");
-            }
+            orderTitle.setText("Order #" + order.getId() + " (" + order.getStatus() + ")");
+            orderPrice.setText("€" + String.format("%.2f", order.getTotalPrice()));
         }
 
         return view;
     }
 }
-

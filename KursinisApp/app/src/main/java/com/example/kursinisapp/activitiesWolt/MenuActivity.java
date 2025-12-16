@@ -22,16 +22,15 @@ import com.example.kursinisapp.R;
 import com.example.kursinisapp.Utils.LocalDateTimeAdapter;
 import com.example.kursinisapp.Utils.RestOperations;
 import com.example.kursinisapp.model.Cuisine;
+import com.example.kursinisapp.model.MenuItemResponse;
+import com.example.kursinisapp.model.RestaurantResponse;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.google.gson.reflect.TypeToken;
 
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.time.LocalDateTime;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
@@ -39,8 +38,8 @@ import java.util.concurrent.Executors;
 
 public class MenuActivity extends AppCompatActivity implements MenuAdapter.OnQuantityChangeListener {
 
-    private int userId;
-    private int restaurantId;
+    private long userId;
+    private long restaurantId;
     private MenuAdapter menuAdapter;
     private TextView orderTotalTextView;
     private TextView orderItemsCountTextView;
@@ -57,8 +56,8 @@ public class MenuActivity extends AppCompatActivity implements MenuAdapter.OnQua
         });
 
         Intent intent = getIntent();
-        userId = intent.getIntExtra("userId", 0);
-        restaurantId = intent.getIntExtra("restaurantId", 0);
+        userId = intent.getLongExtra("userId", 0);
+        restaurantId = intent.getLongExtra("restaurantId", 0);
 
         orderTotalTextView = findViewById(R.id.orderTotal);
         orderItemsCountTextView = findViewById(R.id.orderItemsCount);
@@ -73,35 +72,50 @@ public class MenuActivity extends AppCompatActivity implements MenuAdapter.OnQua
         executor.execute(() -> {
             try {
                 String response = RestOperations.sendGet(GET_RESTAURANT_MENU + restaurantId);
-                System.out.println(response);
-                handler.post(() -> {
-                    try {
-                        if (!response.equals("Error")) {
-                            GsonBuilder gsonBuilder = new GsonBuilder();
-                            gsonBuilder.registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter());
-                            Gson gsonMenu = gsonBuilder.setPrettyPrinting().create();
-                            Type menuListType = new TypeToken<List<Cuisine>>() {
-                            }.getType();
-                            List<Cuisine> menuListFromJson = gsonMenu.fromJson(response, menuListType);
-                            
-                            ListView menuListElement = findViewById(R.id.menuItems);
-                            menuAdapter = new MenuAdapter(this, menuListFromJson);
-                            menuListElement.setAdapter(menuAdapter);
-                            
-                            // Update order summary
-                            updateOrderSummary();
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        Toast.makeText(this, "Error loading menu", Toast.LENGTH_SHORT).show();
-                    }
-                });
+                handler.post(() -> handleMenuResponse(response));
             } catch (IOException e) {
-                handler.post(() -> {
-                    Toast.makeText(this, "Network error", Toast.LENGTH_SHORT).show();
-                });
+                handler.post(() -> Toast.makeText(this, "Network error", Toast.LENGTH_SHORT).show());
             }
         });
+    }
+
+    private void handleMenuResponse(String response) {
+        try {
+            if (!response.equals("Error")) {
+                GsonBuilder gsonBuilder = new GsonBuilder();
+                gsonBuilder.registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter());
+                Gson gsonMenu = gsonBuilder.setPrettyPrinting().create();
+                RestaurantResponse restaurant = gsonMenu.fromJson(response, RestaurantResponse.class);
+
+                List<Cuisine> menuListFromJson = new ArrayList<>();
+                if (restaurant.getMenuItems() != null) {
+                    for (MenuItemResponse item : restaurant.getMenuItems()) {
+                        Cuisine cuisine = new Cuisine();
+                        cuisine.setId((int) item.getId());
+                        cuisine.setName(item.getName());
+                        cuisine.setIngredients(item.getDescription());
+                        cuisine.setPrice(item.getCurrentPrice());
+                        cuisine.setSpicy(false);
+                        cuisine.setVegan(false);
+                        menuListFromJson.add(cuisine);
+                    }
+                }
+
+                if (menuListFromJson.isEmpty()) {
+                    Toast.makeText(this, "Šiuo metu nėra patiekalų", Toast.LENGTH_SHORT).show();
+                }
+
+                ListView menuListElement = findViewById(R.id.menuItems);
+                menuAdapter = new MenuAdapter(this, menuListFromJson);
+                menuAdapter.setOnQuantityChangeListener(this);
+                menuListElement.setAdapter(menuAdapter);
+
+                updateOrderSummary();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Error loading menu", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void updateOrderSummary() {
@@ -109,7 +123,7 @@ public class MenuActivity extends AppCompatActivity implements MenuAdapter.OnQua
 
         Map<Integer, Integer> quantities = menuAdapter.getQuantities();
         List<Cuisine> menuItems = menuAdapter.getMenuItems();
-        
+
         double total = 0.0;
         int itemCount = 0;
 
@@ -135,10 +149,12 @@ public class MenuActivity extends AppCompatActivity implements MenuAdapter.OnQua
         List<Cuisine> menuItems = menuAdapter.getMenuItems();
 
         boolean hasItems = false;
-        for (int qty : quantities.values()) {
-            if (qty > 0) {
+        double total = 0.0;
+        for (Cuisine cuisine : menuItems) {
+            int quantity = quantities.getOrDefault(cuisine.getId(), 0);
+            if (quantity > 0) {
                 hasItems = true;
-                break;
+                total += cuisine.getPrice() * quantity;
             }
         }
 
@@ -149,20 +165,9 @@ public class MenuActivity extends AppCompatActivity implements MenuAdapter.OnQua
 
         Gson gson = new Gson();
         JsonObject orderJson = new JsonObject();
-        orderJson.addProperty("userId", userId);
+        orderJson.addProperty("customerId", userId);
         orderJson.addProperty("restaurantId", restaurantId);
-
-        JsonArray itemsArray = new JsonArray();
-        for (Cuisine cuisine : menuItems) {
-            int quantity = quantities.getOrDefault(cuisine.getId(), 0);
-            if (quantity > 0) {
-                JsonObject itemJson = new JsonObject();
-                itemJson.addProperty("cuisineId", cuisine.getId());
-                itemJson.addProperty("quantity", quantity);
-                itemsArray.add(itemJson);
-            }
-        }
-        orderJson.add("items", itemsArray);
+        orderJson.addProperty("totalPrice", total);
 
         String orderData = gson.toJson(orderJson);
 
@@ -172,24 +177,19 @@ public class MenuActivity extends AppCompatActivity implements MenuAdapter.OnQua
         executor.execute(() -> {
             try {
                 String response = RestOperations.sendPost(CREATE_ORDER, orderData);
-                System.out.println("Order response: " + response);
                 handler.post(() -> {
                     if (!response.equals("Error") && !response.isEmpty()) {
                         Toast.makeText(this, "Order placed successfully!", Toast.LENGTH_SHORT).show();
-                        // Clear the cart
                         menuAdapter.getQuantities().clear();
                         menuAdapter.notifyDataSetChanged();
                         updateOrderSummary();
-                        // Optionally go back to restaurants list
                         finish();
                     } else {
                         Toast.makeText(this, "Failed to place order", Toast.LENGTH_SHORT).show();
                     }
                 });
             } catch (IOException e) {
-                handler.post(() -> {
-                    Toast.makeText(this, "Network error", Toast.LENGTH_SHORT).show();
-                });
+                handler.post(() -> Toast.makeText(this, "Network error", Toast.LENGTH_SHORT).show());
             }
         });
     }
