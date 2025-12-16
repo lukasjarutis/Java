@@ -11,13 +11,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.example.kursinisapp.R;
-import com.example.kursinisapp.model.Restaurant;
+import com.example.kursinisapp.model.RestaurantResponse;
 
 import java.util.List;
 
-public class RestaurantAdapter extends ArrayAdapter<Restaurant> {
+public class RestaurantAdapter extends ArrayAdapter<RestaurantResponse> {
 
-    public RestaurantAdapter(@NonNull Context context, @NonNull List<Restaurant> restaurants) {
+    public RestaurantAdapter(@NonNull Context context, @NonNull List<RestaurantResponse> restaurants) {
         super(context, 0, restaurants);
     }
 
@@ -29,7 +29,7 @@ public class RestaurantAdapter extends ArrayAdapter<Restaurant> {
                     R.layout.item_restaurant, parent, false);
         }
 
-        Restaurant restaurant = getItem(position);
+        RestaurantResponse restaurant = getItem(position);
 
         if (restaurant != null) {
             TextView nameTextView = convertView.findViewById(R.id.restaurantName);
@@ -38,41 +38,19 @@ public class RestaurantAdapter extends ArrayAdapter<Restaurant> {
             TextView typeTextView = convertView.findViewById(R.id.restaurantType);
             TextView hoursTextView = convertView.findViewById(R.id.restaurantHours);
 
-            // Display restaurant name (name + surname or just name)
-            String restaurantName = restaurant.getName();
-            if (restaurant.getSurname() != null && !restaurant.getSurname().isEmpty()) {
-                restaurantName += " " + restaurant.getSurname();
-            }
-            nameTextView.setText(restaurantName);
+            nameTextView.setText(restaurant.getName());
 
-            // Display address
             if (restaurant.getAddress() != null && !restaurant.getAddress().isEmpty()) {
                 addressTextView.setText("📍 " + restaurant.getAddress());
             } else {
                 addressTextView.setText("📍 Address not available");
             }
 
-            // Display phone number
-            if (restaurant.getPhoneNumber() != null && !restaurant.getPhoneNumber().isEmpty()) {
-                phoneTextView.setText("📞 " + restaurant.getPhoneNumber());
-            } else {
-                phoneTextView.setText("📞 Phone not available");
-            }
-
-            if (restaurant.getRestaurantType() != null && !restaurant.getRestaurantType().isEmpty()) {
-                typeTextView.setText("🍽️ " + restaurant.getRestaurantType());
-            } else {
-                typeTextView.setText("🍽️ Restaurant type not available");
-            }
-
-            if (restaurant.getWorkingHours() != null && !restaurant.getWorkingHours().isEmpty()) {
-                hoursTextView.setText("⏰ " + restaurant.getWorkingHours());
-            } else {
-                hoursTextView.setText("⏰ Working hours not provided");
-            }
+            phoneTextView.setText("📞 Not provided");
+            typeTextView.setText("⭐ Popularity: " + String.format("%.1f", restaurant.getPopularityScore()));
+            hoursTextView.setText(restaurant.isOpen() ? "✅ Open" : "⛔ Closed");
         }
 
         return convertView;
     }
 }
-

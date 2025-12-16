@@ -8,6 +8,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -19,9 +20,8 @@ import androidx.core.view.WindowInsetsCompat;
 import com.example.kursinisapp.R;
 import com.example.kursinisapp.Utils.LocalDateTimeAdapter;
 import com.example.kursinisapp.Utils.RestOperations;
-import com.example.kursinisapp.model.Driver;
-import com.example.kursinisapp.model.Restaurant;
-import com.example.kursinisapp.model.User;
+import com.example.kursinisapp.model.AuthResponse;
+import com.example.kursinisapp.model.RestaurantResponse;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
@@ -35,7 +35,7 @@ import java.util.concurrent.Executors;
 
 public class WoltRestaurants extends AppCompatActivity {
 
-    User currentUser;
+    private AuthResponse currentUser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,93 +48,75 @@ public class WoltRestaurants extends AppCompatActivity {
             return insets;
         });
 
-        //Priejimas prie duomenu is praeitos Activity
-
         Intent intent = getIntent();
         String userInfo = intent.getStringExtra("userJsonObject");
-
 
         GsonBuilder build = new GsonBuilder();
         build.registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter());
         Gson gson = build.setPrettyPrinting().create();
-        currentUser = gson.fromJson(userInfo, User.class);
+        currentUser = gson.fromJson(userInfo, AuthResponse.class);
 
-        if (currentUser instanceof Driver) {
+        loadRestaurants();
+    }
 
-        } else if (currentUser instanceof Restaurant) {
-            //net neleisim sito
-        } else {
-            Executor executor = Executors.newSingleThreadExecutor();
-            Handler handler = new Handler(Looper.getMainLooper());
+    private void loadRestaurants() {
+        Executor executor = Executors.newSingleThreadExecutor();
+        Handler handler = new Handler(Looper.getMainLooper());
 
-            executor.execute(() -> {
-                try {
-                    String response = RestOperations.sendGet(GET_ALL_RESTAURANTS_URL);
-                    System.out.println(response);
-                    handler.post(() -> {
-                        try {
-                            if (!response.equals("Error")) {
-                                //Cia yra dalis, kaip is json, kuriame yra [{},{}, {},...] paversti i List is Restoranu
+        executor.execute(() -> {
+            try {
+                String response = RestOperations.sendGet(GET_ALL_RESTAURANTS_URL);
+                handler.post(() -> handleRestaurantResponse(response));
+            } catch (IOException e) {
+                handler.post(() -> Toast.makeText(this, "Nepavyko pasiekti serverio", Toast.LENGTH_SHORT).show());
+            }
+        });
+    }
 
-                                GsonBuilder gsonBuilder = new GsonBuilder();
-                                gsonBuilder.registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter());
-                                Gson gsonRestaurants = gsonBuilder.setPrettyPrinting().create();
-                                Type restaurantListType = new TypeToken<List<Restaurant>>() {
-                                }.getType();
-                                List<Restaurant> restaurantListFromJson = gsonRestaurants.fromJson(response, restaurantListType);
-                                //Json parse end
+    private void handleRestaurantResponse(String response) {
+        try {
+            if (!response.equals("Error")) {
+                GsonBuilder gsonBuilder = new GsonBuilder();
+                gsonBuilder.registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter());
+                Gson gsonRestaurants = gsonBuilder.setPrettyPrinting().create();
+                Type restaurantListType = new TypeToken<List<RestaurantResponse>>() {
+                }.getType();
+                List<RestaurantResponse> restaurantListFromJson = gsonRestaurants.fromJson(response, restaurantListType);
 
-                                //Reikia tuos duomenis, kuriuos ka tik isparsinau is json, atvaizduoti grafiniam elemente
-                                ListView restaurantListElement = findViewById(R.id.restaurantList);
-                                RestaurantAdapter adapter = new RestaurantAdapter(this, restaurantListFromJson);
-                                restaurantListElement.setAdapter(adapter);
+                ListView restaurantListElement = findViewById(R.id.restaurantList);
+                RestaurantAdapter adapter = new RestaurantAdapter(this, restaurantListFromJson);
+                restaurantListElement.setAdapter(adapter);
 
-                                restaurantListElement.setOnItemClickListener((parent, view, position, id) -> {
-                                    Restaurant selectedRestaurant = restaurantListFromJson.get(position);
-                                    AlertDialog.Builder builder = new AlertDialog.Builder(WoltRestaurants.this);
-                                    builder.setTitle(selectedRestaurant.getName());
+                restaurantListElement.setOnItemClickListener((parent, view, position, id) -> {
+                    RestaurantResponse selectedRestaurant = restaurantListFromJson.get(position);
+                    AlertDialog.Builder builder = new AlertDialog.Builder(WoltRestaurants.this);
+                    builder.setTitle(selectedRestaurant.getName());
 
-                                    StringBuilder details = new StringBuilder();
-                                    if (selectedRestaurant.getRestaurantType() != null && !selectedRestaurant.getRestaurantType().isEmpty()) {
-                                        details.append("🍽️ ").append(selectedRestaurant.getRestaurantType()).append("\n");
-                                    }
-                                    if (selectedRestaurant.getWorkingHours() != null && !selectedRestaurant.getWorkingHours().isEmpty()) {
-                                        details.append("⏰ ").append(selectedRestaurant.getWorkingHours()).append("\n");
-                                    }
-                                    if (selectedRestaurant.getAddress() != null && !selectedRestaurant.getAddress().isEmpty()) {
-                                        details.append("📍 ").append(selectedRestaurant.getAddress()).append("\n");
-                                    }
-                                    if (selectedRestaurant.getPhoneNumber() != null && !selectedRestaurant.getPhoneNumber().isEmpty()) {
-                                        details.append("📞 ").append(selectedRestaurant.getPhoneNumber()).append("\n");
-                                    }
+                    StringBuilder details = new StringBuilder();
+                    if (selectedRestaurant.getPopularityScore() > 0) {
+                        details.append("⭐ ").append(String.format("%.1f", selectedRestaurant.getPopularityScore())).append("\n");
+                    }
+                    if (selectedRestaurant.getAddress() != null && !selectedRestaurant.getAddress().isEmpty()) {
+                        details.append("📍 ").append(selectedRestaurant.getAddress()).append("\n");
+                    }
+                    details.append(selectedRestaurant.isOpen() ? "✅ Open" : "⛔ Closed");
 
-                                    if (details.length() == 0) {
-                                        details.append("Restaurant details are not available.");
-                                    }
-
-                                    builder.setMessage(details.toString());
-                                    builder.setPositiveButton("View menu", (dialog, which) -> {
-                                        Intent intentMenu = new Intent(WoltRestaurants.this, MenuActivity.class);
-                                        intentMenu.putExtra("restaurantId", selectedRestaurant.getId());
-                                        intentMenu.putExtra("userId", currentUser.getId());
-                                        startActivity(intentMenu);
-                                    });
-                                    builder.setNegativeButton("Close", null);
-                                    builder.show();
-                                });
-
-
-                            }
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
+                    builder.setMessage(details.toString());
+                    builder.setPositiveButton("View menu", (dialog, which) -> {
+                        Intent intentMenu = new Intent(WoltRestaurants.this, MenuActivity.class);
+                        intentMenu.putExtra("restaurantId", selectedRestaurant.getId());
+                        intentMenu.putExtra("userId", currentUser.getId());
+                        startActivity(intentMenu);
                     });
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            });
-        }
+                    builder.setNegativeButton("Close", null);
+                    builder.show();
+                });
 
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Nepavyko nuskaityti restoranų", Toast.LENGTH_SHORT).show();
+        }
     }
 
     public void viewPurchaseHistory(View view) {
@@ -144,6 +126,5 @@ public class WoltRestaurants extends AppCompatActivity {
     }
 
     public void viewMyAccount(View view) {
-        //Arba naujas activity arba fragmentas - account redagavimo forma
     }
 }
