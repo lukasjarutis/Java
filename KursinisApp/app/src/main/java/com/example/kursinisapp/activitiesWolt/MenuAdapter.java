@@ -139,6 +139,10 @@ public class MenuAdapter extends BaseAdapter {
         return menuItems;
     }
 
+    public void setOnQuantityChangeListener(OnQuantityChangeListener quantityChangeListener) {
+        this.quantityChangeListener = quantityChangeListener;
+    }
+
     private void showCuisineDetails(Cuisine cuisine) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle(cuisine.getName());

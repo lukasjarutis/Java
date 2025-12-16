@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -16,18 +17,19 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.example.kursinisapp.R;
 import com.example.kursinisapp.Utils.RestOperations;
-import com.example.kursinisapp.model.FoodOrder;
+import com.example.kursinisapp.model.OrderResponse;
 import com.google.gson.reflect.TypeToken;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 public class MyOrders extends AppCompatActivity {
 
-    private int userId;
+    private long userId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,46 +42,54 @@ public class MyOrders extends AppCompatActivity {
             return insets;
         });
 
-        //Noriu uzkrauti orderius konkreciam klientui
-
         Intent intent = getIntent();
-        userId = intent.getIntExtra("id", 0);
+        userId = intent.getLongExtra("id", 0);
 
+        loadOrders();
+    }
+
+    private void loadOrders() {
         Executor executor = Executors.newSingleThreadExecutor();
         Handler handler = new Handler(Looper.getMainLooper());
 
         executor.execute(() -> {
             try {
-                String response = RestOperations.sendGet(GET_ORDERS_BY_USER + userId);
-                System.out.println(response);
-                handler.post(() -> {
-                    try {
-                        if (!response.equals("Error")) {
-                            Type ordersListType = new TypeToken<List<FoodOrder>>() {
-                            }.getType();
-                            List<FoodOrder> ordersListFromJson = new com.google.gson.Gson().fromJson(response, ordersListType);
-                            ListView ordersListElement = findViewById(R.id.myOrderList);
-                            MyOrdersAdapter adapter = new MyOrdersAdapter(this, ordersListFromJson);
-                            ordersListElement.setAdapter(adapter);
-
-                            ordersListElement.setOnItemClickListener((parent, view, position, id) -> {
-                                System.out.println(ordersListFromJson.get(position));
-                                Intent intentChat = new Intent(MyOrders.this, ChatSystem.class);
-                                intentChat.putExtra("orderId", ordersListFromJson.get(position).getId());
-                                intentChat.putExtra("userId", userId);
-                                startActivity(intentChat);
-                            });
-
-
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                });
+                String response = RestOperations.sendGet(GET_ORDERS_BY_USER);
+                handler.post(() -> handleOrdersResponse(response));
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                handler.post(() -> Toast.makeText(this, "Nepavyko pasiekti užsakymų", Toast.LENGTH_SHORT).show());
             }
         });
     }
 
+    private void handleOrdersResponse(String response) {
+        try {
+            if (!response.equals("Error")) {
+                Type ordersListType = new TypeToken<List<OrderResponse>>() {
+                }.getType();
+                List<OrderResponse> ordersListFromJson = new com.google.gson.Gson().fromJson(response, ordersListType);
+                List<OrderResponse> userOrders = new ArrayList<>();
+
+                for (OrderResponse order : ordersListFromJson) {
+                    if (order.getCustomer() != null && order.getCustomer().getId() == userId) {
+                        userOrders.add(order);
+                    }
+                }
+
+                ListView ordersListElement = findViewById(R.id.myOrderList);
+                MyOrdersAdapter adapter = new MyOrdersAdapter(this, userOrders);
+                ordersListElement.setAdapter(adapter);
+
+                ordersListElement.setOnItemClickListener((parent, view, position, id) -> {
+                    OrderResponse order = userOrders.get(position);
+                    Intent intentChat = new Intent(MyOrders.this, ChatSystem.class);
+                    intentChat.putExtra("orderId", order.getId());
+                    intentChat.putExtra("userId", userId);
+                    startActivity(intentChat);
+                });
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
