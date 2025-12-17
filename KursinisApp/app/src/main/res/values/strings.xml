@@ -6,4 +6,19 @@
     <string name="register_btn_en">New account</string>
     <string name="save_user_btn_en">Create!</string>
     <string name="reg_btn_en">Register</string>
+    <string name="account_full_name">Full name</string>
+    <string name="account_email">Email</string>
+    <string name="account_phone">Phone</string>
+    <string name="account_save">Save changes</string>
+    <string name="account_saved">Account updated</string>
+    <string name="account_save_error">Failed to save account</string>
+    <string name="account_load_error">Failed to load account</string>
+    <string name="driver_orders_error">Failed to load active orders</string>
+    <string name="driver_order_updated">Order status updated</string>
+    <string name="driver_order_update_error">Failed to update order</string>
+    <string name="order_pickup">Pick up</string>
+    <string name="order_delivering">Vežamas</string>
+    <string name="order_delivered">Pristatytas</string>
+    <string name="order_status_label">Status: %1$s</string>
+    <string name="order_price_label">€%1$.2f</string>
 </resources>

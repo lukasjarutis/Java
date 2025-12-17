@@ -12,4 +12,7 @@ public class Constants {
     public static final String SEND_MESSAGE = HOME_URL + "sendMessage";
     public static final String GET_RESTAURANT_MENU = API_URL + "restaurants/";
     public static final String CREATE_ORDER = API_URL + "orders";
+    public static final String UPDATE_ORDER_STATUS = API_URL + "orders/";
+    public static final String GET_USER_INFO = API_URL + "users/";
+    public static final String UPDATE_USER_INFO = API_URL + "users/";
 }

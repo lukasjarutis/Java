@@ -21,6 +21,12 @@
             android:name=".activitiesWolt.ChatSystem"
             android:exported="false" />
         <activity
+            android:name=".activitiesWolt.MyAccountActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activitiesWolt.DriverOrders"
+            android:exported="false" />
+        <activity
             android:name=".activitiesWolt.MyOrders"
             android:exported="false" />
         <activity
