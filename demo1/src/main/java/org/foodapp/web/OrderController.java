@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -54,6 +55,16 @@ public class OrderController {
     @RequestMapping(value = "/{id}/status", method = {RequestMethod.PATCH, RequestMethod.POST})
     public ResponseEntity<Order> updateStatus(@PathVariable long id,
                                               @RequestBody(required = false) UpdateOrderStatusRequest request) {
+        return ResponseEntity.ok(applyStatusUpdate(id, request));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Order> replaceStatus(@PathVariable long id,
+                                               @RequestBody(required = false) UpdateOrderStatusRequest request) {
+        return ResponseEntity.ok(applyStatusUpdate(id, request));
+    }
+
+    private Order applyStatusUpdate(long id, UpdateOrderStatusRequest request) {
         String statusValue = request != null ? request.getStatus() : null;
         if (statusValue == null || statusValue.isBlank()) {
             throw new BadRequestException("Status is required");
@@ -64,6 +75,7 @@ public class OrderController {
                     "Unknown order status: " + statusValue + ". Allowed values: " + OrderStatus.allowedValues()
             );
         }
-        return ResponseEntity.ok(orderService.updateStatus(id, status));
+        Long driverId = request != null ? request.getDriverId() : null;
+        return orderService.updateStatus(id, status, driverId);
     }
 }

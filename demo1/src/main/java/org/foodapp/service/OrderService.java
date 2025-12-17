@@ -5,6 +5,7 @@ import org.foodapp.Driver;
 import org.foodapp.Order;
 import org.foodapp.OrderStatus;
 import org.foodapp.Restaurant;
+import org.foodapp.UserRole;
 import org.foodapp.exception.BadRequestException;
 import org.foodapp.repository.OrderRepository;
 import org.foodapp.repository.RestaurantRepository;
@@ -54,6 +55,9 @@ public class OrderService {
         if (driverId != null) {
             var driverRow = userRepository.findById(driverId)
                     .orElseThrow(() -> new org.foodapp.exception.NotFoundException("Driver not found: " + driverId));
+            if (UserRole.valueOf(driverRow.getRole()) != UserRole.DRIVER) {
+                throw new BadRequestException("User " + driverId + " is not a driver");
+            }
             Driver driver = new Driver();
             driver.setId(driverRow.getId());
             driver.setUsername(driverRow.getUsername());
@@ -66,10 +70,17 @@ public class OrderService {
         return orderRepository.create(order);
     }
 
-    public Order updateStatus(long id, OrderStatus status) {
+    public Order updateStatus(long id, OrderStatus status, Long driverId) {
         if (status == null) {
             throw new BadRequestException("Order status is required");
         }
-        return orderRepository.updateStatus(id, status);
+        if (driverId != null) {
+            var driverRow = userRepository.findById(driverId)
+                    .orElseThrow(() -> new org.foodapp.exception.NotFoundException("Driver not found: " + driverId));
+            if (UserRole.valueOf(driverRow.getRole()) != UserRole.DRIVER) {
+                throw new BadRequestException("User " + driverId + " is not a driver");
+            }
+        }
+        return orderRepository.updateStatus(id, status, driverId);
     }
 }

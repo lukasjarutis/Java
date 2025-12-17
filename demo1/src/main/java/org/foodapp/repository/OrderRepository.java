@@ -112,10 +112,14 @@ public class OrderRepository {
         return order;
     }
 
-    public Order updateStatus(long id, OrderStatus status) {
-        Order existing = findById(id);
-        jdbcTemplate.update("UPDATE food_order SET status = ? WHERE id = ?", status.name(), id);
-        existing.setStatus(status);
-        return existing;
+    public Order updateStatus(long id, OrderStatus status, Long driverId) {
+        findById(id);
+        if (driverId != null) {
+            jdbcTemplate.update("UPDATE food_order SET status = ?, driver_id = ? WHERE id = ?",
+                    status.name(), driverId, id);
+        } else {
+            jdbcTemplate.update("UPDATE food_order SET status = ? WHERE id = ?", status.name(), id);
+        }
+        return findById(id);
     }
 }
