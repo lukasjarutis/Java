@@ -19,6 +19,7 @@ import androidx.core.view.WindowInsetsCompat;
 import com.example.kursinisapp.R;
 import com.example.kursinisapp.Utils.RestOperations;
 import com.example.kursinisapp.model.AuthResponse;
+import com.example.kursinisapp.activitiesWolt.DriverOrders;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
@@ -63,7 +64,12 @@ public class MainActivity extends AppCompatActivity {
                             AuthResponse authResponse = new Gson().fromJson(response, AuthResponse.class);
                             if (authResponse != null && authResponse.getId() > 0) {
                                 errorMessage.setText("");
-                                Intent intent = new Intent(MainActivity.this, WoltRestaurants.class);
+                                Intent intent;
+                                if ("DRIVER".equalsIgnoreCase(authResponse.getRole())) {
+                                    intent = new Intent(MainActivity.this, DriverOrders.class);
+                                } else {
+                                    intent = new Intent(MainActivity.this, WoltRestaurants.class);
+                                }
                                 intent.putExtra("userJsonObject", response);
                                 startActivity(intent);
                             } else {

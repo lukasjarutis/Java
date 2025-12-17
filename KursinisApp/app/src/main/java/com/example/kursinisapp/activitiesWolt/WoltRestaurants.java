@@ -126,5 +126,8 @@ public class WoltRestaurants extends AppCompatActivity {
     }
 
     public void viewMyAccount(View view) {
+        Intent intent = new Intent(WoltRestaurants.this, MyAccountActivity.class);
+        intent.putExtra("userJsonObject", new Gson().toJson(currentUser));
+        startActivity(intent);
     }
 }
