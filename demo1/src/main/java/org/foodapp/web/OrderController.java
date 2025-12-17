@@ -9,10 +9,10 @@ import org.foodapp.web.dto.UpdateOrderStatusRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -51,16 +51,18 @@ public class OrderController {
         ));
     }
 
-    @PatchMapping("/{id}/status")
-    public ResponseEntity<Order> updateStatus(@PathVariable long id, @RequestBody UpdateOrderStatusRequest request) {
-        if (request.getStatus() == null || request.getStatus().isBlank()) {
+    @RequestMapping(value = "/{id}/status", method = {RequestMethod.PATCH, RequestMethod.POST})
+    public ResponseEntity<Order> updateStatus(@PathVariable long id,
+                                              @RequestBody(required = false) UpdateOrderStatusRequest request) {
+        String statusValue = request != null ? request.getStatus() : null;
+        if (statusValue == null || statusValue.isBlank()) {
             throw new BadRequestException("Status is required");
         }
-        OrderStatus status;
-        try {
-            status = OrderStatus.valueOf(request.getStatus());
-        } catch (IllegalArgumentException ex) {
-            throw new BadRequestException("Unknown order status: " + request.getStatus());
+        OrderStatus status = OrderStatus.fromString(statusValue);
+        if (status == null) {
+            throw new BadRequestException(
+                    "Unknown order status: " + statusValue + ". Allowed values: " + OrderStatus.allowedValues()
+            );
         }
         return ResponseEntity.ok(orderService.updateStatus(id, status));
     }
