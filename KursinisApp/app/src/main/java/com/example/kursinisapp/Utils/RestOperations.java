@@ -3,6 +3,7 @@ package com.example.kursinisapp.Utils;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -20,15 +21,12 @@ public class RestOperations {
         int code = httpURLConnection.getResponseCode();
         System.out.println("Resonse code get " + code);
 
-        if (code == HttpURLConnection.HTTP_OK) {
-            BufferedReader in = new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream()));
-            String line;
-            StringBuffer response = new StringBuffer();
-            while ((line = in.readLine()) != null) {
-                response.append(line);
+        if (isSuccessful(code)) {
+            try {
+                return readResponseBody(httpURLConnection.getInputStream());
+            } catch (IOException e) {
+                return "";
             }
-            in.close();
-            return response.toString();
         } else {
             return "Error";
         }
@@ -43,15 +41,12 @@ public class RestOperations {
         int code = httpURLConnection.getResponseCode();
         System.out.println("Resonse code get " + code);
 
-        if (code == HttpURLConnection.HTTP_OK) {
-            BufferedReader in = new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream()));
-            String line;
-            StringBuffer response = new StringBuffer();
-            while ((line = in.readLine()) != null) {
-                response.append(line);
+        if (isSuccessful(code)) {
+            try {
+                return readResponseBody(httpURLConnection.getInputStream());
+            } catch (IOException e) {
+                return "";
             }
-            in.close();
-            return response.toString();
         } else {
             return "Error";
         }
@@ -77,15 +72,12 @@ public class RestOperations {
         int code = httpURLConnection.getResponseCode();
         System.out.println("Resonse code get " + code);
 
-        if (code == HttpURLConnection.HTTP_OK) {
-            BufferedReader in = new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream()));
-            String line;
-            StringBuffer response = new StringBuffer();
-            while ((line = in.readLine()) != null) {
-                response.append(line);
+        if (isSuccessful(code)) {
+            try {
+                return readResponseBody(httpURLConnection.getInputStream());
+            } catch (IOException e) {
+                return "";
             }
-            in.close();
-            return response.toString();
         } else {
             return "Error";
         }
@@ -111,17 +103,32 @@ public class RestOperations {
         int code = httpURLConnection.getResponseCode();
         System.out.println("Resonse code get " + code);
 
-        if (code == HttpURLConnection.HTTP_OK) {
-            BufferedReader in = new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream()));
-            String line;
-            StringBuffer response = new StringBuffer();
-            while ((line = in.readLine()) != null) {
-                response.append(line);
+        if (isSuccessful(code)) {
+            try {
+                return readResponseBody(httpURLConnection.getInputStream());
+            } catch (IOException e) {
+                return "";
             }
-            in.close();
-            return response.toString();
         } else {
             return "Error";
         }
+    }
+
+    private static boolean isSuccessful(int responseCode) {
+        return responseCode >= HttpURLConnection.HTTP_OK && responseCode < 300;
+    }
+
+    private static String readResponseBody(InputStream inputStream) throws IOException {
+        if (inputStream == null) {
+            return "";
+        }
+        StringBuilder response = new StringBuilder();
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(inputStream))) {
+            String line;
+            while ((line = in.readLine()) != null) {
+                response.append(line);
+            }
+        }
+        return response.toString();
     }
 }
